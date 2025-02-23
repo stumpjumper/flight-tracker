@@ -30,48 +30,75 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
-    // Define the render function
-    function renderTimeLink(data) {
-        var parts = data.split(' ');
-        if (parts.length >= 2) {
-            var time = parts[0];
-            var tz = parts[1].toLowerCase();
-            var [hh, mm] = time.split(':');
-            var url = 'https://savvytime.com/converter/' + tz + '-to-ca-mountain-view-nm-albuquerque-fl-pensacola-dc-washington-utc/' + hh + '-' + mm;
-            return '<a href="' + url + '" target="_blank">' + data + '</a>';
-        } else {
-            return data;
+        // Function to render time link with date and time zone abbreviation
+        function renderTimeLink(data, type, row) {
+            if (type === 'display') {
+                // Get date from row data, e.g., "12/04/24"
+                var dateStr = row['Date'];
+                // Split time string, e.g., "15:48 CST" -> ["15:48", "CST"]
+                var timeParts = data.split(' ');
+                if (timeParts.length >= 2) {
+                    var time = timeParts[0];           // "15:48"
+                    var tz = timeParts[1].toLowerCase(); // "cst"
+                    var [hh, mm] = time.split(':');    // ["15", "48"]
+        
+                    // Parse date "MM/DD/YY" to Date object
+                    var dateParts = dateStr.split('/');
+                    var month = parseInt(dateParts[0], 10) - 1; // Months are 0-based
+                    var day = parseInt(dateParts[1], 10);
+                    var year = parseInt(dateParts[2], 10) + 2000; // Convert "24" to 2024
+                    var dateObj = new Date(year, month, day);
+        
+                    // Format date as "mmm-d-yyyy"
+                    var monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+                    var mmm = monthNames[dateObj.getMonth()];
+                    var d = dateObj.getDate();
+                    var yyyy = dateObj.getFullYear();
+                    var dateFormatted = mmm + '-' + d + '-' + yyyy; // e.g., "dec-4-2024"
+        
+                    // Fixed list of target cities
+                    var targetCities = 'ca-mountain-view-nm-albuquerque-fl-pensacola-dc-washington-utc';
+        
+                    // Construct the URL using the lowercase time zone abbreviation
+                    var url = 'https://savvytime.com/converter/' + tz + '-to-' + targetCities + '/' + dateFormatted + '/' + hh + '-' + mm;
+                    // Return the time string as a clickable link
+                    return '<a href="' + url + '" target="_blank">' + data + '</a>';
+                } else {
+                    return data; // Fallback if time string format is invalid
+                }
+            } else {
+                return data; // Return raw data for sorting/filtering
+            }
         }
-    }
-
-    // Parse CSV and initialize DataTable
-    Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vT4cSV2N_DsnxP2q21YBg3kMqmYIpnTCkksiv07BrqP-YgpP-CrPPSvmUaBCBhD4uPbd9bnrCtetrhY/pub?output=csv", {
-        download: true,
-        header: true,
-        complete: function(results) {
-            $('#flightTable').DataTable({
-                data: results.data,
-                columns: [
-                    { data: 'Date' },
-                    { data: 'Aircraft', render: function(data) {
-                        return '<a href="https://www.flightaware.com/resources/registration/' + data + '" target="_blank">' + data + '</a>';
-                    }},
-                    { data: 'Departure', render: function(data) {
-                        return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
-                    }},
-                    { data: 'Arrival', render: function(data) {
-                        return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
-                    }},
-                    { data: 'Departure Time', render: renderTimeLink },
-                    { data: 'Arrival Time', render: renderTimeLink },
-                    { data: 'Historical URL', render: function(data) {
-                        return '<a href="' + data + '" target="_blank">View Flight</a>';
-                    }}
-                ]
-            });
-        }
-    });
-</script>
-    v2.1.1
+        
+        // Example DataTable initialization (adjust URL and other columns as needed)
+        Papa.parse("https://your-csv-url.csv", {
+            download: true,
+            header: true,
+            complete: function(results) {
+                $('#flightTable').DataTable({
+                    data: results.data,
+                    columns: [
+                        { data: 'Date' },
+                        { data: 'Aircraft', render: function(data) {
+                            return '<a href="https://www.flightaware.com/resources/registration/' + data + '" target="_blank">' + data + '</a>';
+                        }},
+                        { data: 'Departure', render: function(data) {
+                            return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
+                        }},
+                        { data: 'Arrival', render: function(data) {
+                            return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
+                        }},
+                        { data: 'Departure Time', render: renderTimeLink },
+                        { data: 'Arrival Time', render: renderTimeLink },
+                        { data: 'Historical URL', render: function(data) {
+                            return '<a href="' + data + '" target="_blank">View Flight</a>';
+                        }}
+                    ]
+                });
+            }
+        });
+    </script>
+v2.1.2
 </body>
 </html>
