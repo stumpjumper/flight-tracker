@@ -30,55 +30,48 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
-        Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vT4cSV2N_DsnxP2q21YBg3kMqmYIpnTCkksiv07BrqP-YgpP-CrPPSvmUaBCBhD4uPbd9bnrCtetrhY/pub?output=csv", {
-            download: true,
-            header: true,
-            complete: function(results) {
-                $('#flightTable').DataTable({
-                    data: results.data,
-                    columns: [
-                        { data: 'Date' },  // No link for Date
-                        { data: 'Aircraft', render: function(data) {
-                            return '<a href="https://www.flightaware.com/resources/registration/' + data + '" target="_blank">' + data + '</a>';
-                        }},
-                        { data: 'Departure', render: function(data) {
-                            return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
-                        }},
-                        { data: 'Arrival', render: function(data) {
-                            return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
-                        }},
-                        { data: 'Departure Time', render: function(data) {
-                            var parts = data.split(' ');
-                            if (parts.length >= 2) {
-                                var time = parts[0];  // e.g., "15:48"
-                                var tz = parts[1].toLowerCase();  // e.g., "pst" from "PST"
-                                var [hh, mm] = time.split(':');  // e.g., ["15", "48"]
-                                var url = 'https://savvytime.com/converter/' + tz + '-to-pst-mst-cst-est-utc/' + hh + '-' + mm;
-                                return '<a href="' + url + '" target="_blank">' + data + '</a>';
-                            } else {
-                                return data;  // Fallback if no time zone is present
-                            }
-                        }},
-                        { data: 'Arrival Time', render: function(data) {
-                            var parts = data.split(' ');
-                            if (parts.length >= 2) {
-                                var time = parts[0];  // e.g., "15:48"
-                                var tz = parts[1].toLowerCase();  // e.g., "pst" from "PST"
-                                var [hh, mm] = time.split(':');  // e.g., ["15", "48"]
-                                var url = 'https://savvytime.com/converter/' + tz + '-to-pst-mst-cst-est-utc/' + hh + '-' + mm;
-                                return '<a href="' + url + '" target="_blank">' + data + '</a>';
-                            } else {
-                                return data;  // Fallback if no time zone is present
-                            }
-                        }},
-                        { data: 'Historical URL', render: function(data) {
-                            return '<a href="' + data + '" target="_blank">View Flight</a>';
-                        }}
-                    ]
-                });
-            }
-        });
-    </script>
-    v2.0.1
+    // Define the render function
+    function renderTimeLink(data) {
+        var parts = data.split(' ');
+        if (parts.length >= 2) {
+            var time = parts[0];
+            var tz = parts[1].toLowerCase();
+            var [hh, mm] = time.split(':');
+            var url = 'https://savvytime.com/converter/' + tz + '-to-pst-mst-cst-est-utc/' + hh + '-' + mm;
+            return '<a href="' + url + '" target="_blank">' + data + '</a>';
+        } else {
+            return data;
+        }
+    }
+
+    // Parse CSV and initialize DataTable
+    Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vT4cSV2N_DsnxP2q21YBg3kMqmYIpnTCkksiv07BrqP-YgpP-CrPPSvmUaBCBhD4uPbd9bnrCtetrhY/pub?output=csv", {
+        download: true,
+        header: true,
+        complete: function(results) {
+            $('#flightTable').DataTable({
+                data: results.data,
+                columns: [
+                    { data: 'Date' },
+                    { data: 'Aircraft', render: function(data) {
+                        return '<a href="https://www.flightaware.com/resources/registration/' + data + '" target="_blank">' + data + '</a>';
+                    }},
+                    { data: 'Departure', render: function(data) {
+                        return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
+                    }},
+                    { data: 'Arrival', render: function(data) {
+                        return '<a href="https://www.airnav.com/airport/' + data + '" target="_blank">' + data + '</a>';
+                    }},
+                    { data: 'Departure Time', render: renderTimeLink },
+                    { data: 'Arrival Time', render: renderTimeLink },
+                    { data: 'Historical URL', render: function(data) {
+                        return '<a href="' + data + '" target="_blank">View Flight</a>';
+                    }}
+                ]
+            });
+        }
+    });
+</script>
+    v2.1.0
 </body>
 </html>
