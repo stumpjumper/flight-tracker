@@ -30,6 +30,9 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script>
+        <!-- =-=-=-=-=-=-=-=-=-= Need to set the URL =-=-=-=-=-=-=-=-=-= -->
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT4cSV2N_DsnxP2q21YBg3kMqmYIpnTCkksiv07BrqP-YgpP-CrPPSvmUaBCBhD4uPbd9bnrCtetrhY/pub?output=csv';
+        
         // Function to render time link with date and time zone abbreviation
         function renderTimeLink(data, type, row) {
             if (type === 'display') {
@@ -72,7 +75,7 @@
         }
         
         // Example DataTable initialization (adjust URL and other columns as needed)
-        Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vT4cSV2N_DsnxP2q21YBg3kMqmYIpnTCkksiv07BrqP-YgpP-CrPPSvmUaBCBhD4uPbd9bnrCtetrhY/pub?output=csv", {
+        Papa.parse(CSV_URL, {
             download: true,
             header: true,
             complete: function(results) {
@@ -94,11 +97,13 @@
                         { data: 'Historical URL', render: function(data) {
                             return '<a href="' + data + '" target="_blank">View Flight</a>';
                         }}
-                    ]
+                    ],
+                    order: [[0, 'desc']],  // Reverse sort on the Date column (index 0)
+                    pageLength: 100        // Show 100 entries by default
                 });
             }
         });
     </script>
-v2.1.3
+v2.1.4
 </body>
 </html>
